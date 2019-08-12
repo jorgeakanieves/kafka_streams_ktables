@@ -1,0 +1,35 @@
+---
+apiVersion: "extensions/v1beta1"
+kind: "Deployment"
+metadata:
+  name: "data-assembler"
+  namespace: "default"
+  labels:
+    app: "data-assembler"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "data-assembler"
+  template:
+    metadata:
+      labels:
+        app: "data-assembler"
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - "data-assembler"
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: "data-assembler"
+        image: "data-assembler:latest"
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: -DLOGLEVEL=INFO
+

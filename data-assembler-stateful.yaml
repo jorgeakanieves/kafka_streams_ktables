@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-assembler
+  labels:
+    app: data-assembler
+spec:
+  clusterIP: None
+  selector:
+    app: data-assembler
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: data-assembler
+spec:
+  serviceName: "data-assembler"
+  replicas: 2
+  podManagementPolicy: "Parallel"
+  selector:
+    matchLabels:
+      app: data-assembler
+  template:
+    metadata:
+      labels:
+        app: data-assembler
+    spec:
+      containers:
+      - name: data-assembler
+        image: data-assembler:latest
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: -DLOGLEVEL=INFO
+        volumeMounts:
+        - name: rocksdb
+          mountPath: /var/lib/data-assembler
+  volumeClaimTemplates:
+  - metadata:
+      name: rocksdb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
